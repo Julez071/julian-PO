@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+    <title>Julian-PO Chat App</title>
+  </head>
+  <body>
+    <div id="app">
+      <div id="chat-container">
+        <!-- Messages will go here -->
+      </div>
+      <div id="julian-area">
+        <div class="julian-face">
+          <!-- The image of Julian will be placed here -->
+          <img src="/julian.png" alt="Julian PO" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'120\' height=\'120\'><rect width=\'120\' height=\'120\' fill=\'%23333\'/><text x=\'50%\' y=\'50%\' fill=\'%23fff\' font-size=\'14\' text-anchor=\'middle\' dy=\'.3em\'>[IMAGE]</text></svg>'" />
+        </div>
+        <div id="latest-bubble" class="speech-bubble hidden">
+          <p id="julian-text"></p>
+        </div>
+      </div>
+      <form id="chat-form">
+        <input type="text" id="chat-input" placeholder="Type your message..." autocomplete="off" autofocus />
+        <button type="submit" id="chat-submit">SEND</button>
+      </form>
+    </div>
+    <script type="module" src="/main.js"></script>
+  </body>
+</html>
