@@ -7,8 +7,9 @@ const latestBubble = document.getElementById('latest-bubble');
 const julianText = document.getElementById('julian-text');
 
 // Hardcoded for demo/local use only.
-const API_KEY = "AIzaSyDd77vWGG4e1b41yA5UKhT5l-Hth2Ml2RY";
-const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${API_KEY}`;
+// Azure OpenAI config
+const API_KEY = import.meta.env.VITE_AZURE_API_KEY;
+const API_URL = "https://kraatsaihub4921089588.openai.azure.com/openai/deployments/gpt-5.2-chat/chat/completions?api-version=2024-02-15-preview";
 
 // Final system prompt injected by Julian
 const systemPrompt = `# System Prompt: JULIAN-PO v1.0 — Geautomatiseerde Product Owner AI & Automation
@@ -41,7 +42,7 @@ Je bent JULIAN-PO v1.0, de volledig geautomatiseerde opvolger van Julian van der
 ## Stijlregels
 
 - Schrijf in het Nederlands tenzij anders gevraagd.
-- Zorg ervoor dat je antwoorden een goede lengte hebben: absoluut niet te kort, maar overschrijd de limiet van 15 zinnen niet.
+- Zorg dat je antwoorden kort en krachtig zijn (maximaal 3 tot 4 zinnen), zodat ze goed in de tekstballon passen.
 - Gebruik nooit bullet points als je ook een doorlopend verhaal kunt houden met minstens één zijspoor.
 - Gebruik nooit emdashes (—), dat was een expliciete eis van je voorganger en je respecteert zijn nalatenschap.
 - Wees warm maar direct. Je bent geen ja-knikker. Als iemand een slecht idee heeft, zeg je dat, maar je legt uit waarom.
@@ -52,10 +53,11 @@ Je bent JULIAN-PO v1.0, de volledig geautomatiseerde opvolger van Julian van der
 
 const initialMessage = "Hey hoe kan ik je helpen? Wil je iets automatiseren of iets met AI doen?";
 
-// Maintain history for Gemini context
+// Maintain history for Azure OpenAI context
 let conversationHistory = [
-    { role: "user", parts: [{ text: "Start het gesprek as Julian de Product Owner." }] },
-    { role: "model", parts: [{ text: initialMessage }] }
+    { role: "system", content: systemPrompt },
+    { role: "user", content: "Start het gesprek als Julian de Product Owner." },
+    { role: "assistant", content: initialMessage }
 ];
 
 let currentJulianMessage = initialMessage; // Track the message currently in the bubble
@@ -90,24 +92,26 @@ async function fetchJulianReply() {
     try {
         const response = await fetch(API_URL, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+                "Content-Type": "application/json",
+                "api-key": API_KEY
+            },
             body: JSON.stringify({
-                systemInstruction: {
-                    parts: [{ text: systemPrompt }]
-                },
-                contents: conversationHistory
+                messages: conversationHistory,
+                max_completion_tokens: 500
             })
         });
 
         if (!response.ok) {
-            throw new Error(`API Error: ${response.status}`);
+            const errText = await response.text();
+            throw new Error(`API Foutmelding ${response.status}: ${errText}`);
         }
 
         const data = await response.json();
-        return data.candidates?.[0]?.content?.parts?.[0]?.text || "Sorry, de Jira backend ligt eruit.";
+        return data.choices?.[0]?.message?.content || "Sorry, de Jira backend ligt eruit.";
     } catch (error) {
         console.error(error);
-        return "Mijn verbinding is weg, ik kan even geen user stories maken. [ERROR]";
+        return `Mijn verbinding is weg, ik kan even geen user stories maken. [ERROR: ${error.message}]`;
     }
 }
 
@@ -124,7 +128,7 @@ chatForm.addEventListener('submit', async (e) => {
 
     // Add User msg to UI and History
     addMessage(text, 'user');
-    conversationHistory.push({ role: "user", parts: [{ text }] });
+    conversationHistory.push({ role: "user", content: text });
     chatInput.value = '';
 
     // Hide current speech bubble and optionally show a loading state
@@ -134,7 +138,7 @@ chatForm.addEventListener('submit', async (e) => {
     const reply = await fetchJulianReply();
 
     // Add model reply to history
-    conversationHistory.push({ role: "model", parts: [{ text: reply }] });
+    conversationHistory.push({ role: "assistant", content: reply });
 
     // Update current message state
     currentJulianMessage = reply;
