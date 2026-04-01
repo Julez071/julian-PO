@@ -60,6 +60,7 @@ body::after {
 
 #chat-container {
   flex-grow: 1;
+  min-height: 0;
   padding: 20px;
   overflow-y: auto;
   display: flex;
@@ -149,6 +150,15 @@ body::after {
 
 .speech-bubble.hidden {
   display: none;
+}
+
+#julian-text {
+  max-height: 35vh;
+  overflow-y: auto;
+  /* scrollbar styles for this specfic container to look decent */
+  padding-right: 5px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-color) transparent;
 }
 
 #chat-form {
