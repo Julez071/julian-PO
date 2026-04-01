@@ -6,10 +6,8 @@ const chatInput = document.getElementById('chat-input');
 const latestBubble = document.getElementById('latest-bubble');
 const julianText = document.getElementById('julian-text');
 
-// Hardcoded for demo/local use only.
-// Azure OpenAI config
-const API_KEY = import.meta.env.VITE_AZURE_API_KEY;
-const API_URL = "https://kraatsaihub4921089588.openai.azure.com/openai/deployments/gpt-5.2-chat/chat/completions?api-version=2024-02-15-preview";
+// De sleutel is nu veilig verborgen op de backend; we gebruiken Vercel Serverless Functions
+const API_URL = "/api/chat";
 
 // Final system prompt injected by Julian
 const systemPrompt = `# System Prompt: JULIAN-PO v1.0 — Geautomatiseerde Product Owner AI & Automation
@@ -93,18 +91,16 @@ async function fetchJulianReply() {
         const response = await fetch(API_URL, {
             method: "POST",
             headers: {
-                "Content-Type": "application/json",
-                "api-key": API_KEY
+                "Content-Type": "application/json"
             },
             body: JSON.stringify({
-                messages: conversationHistory,
-                max_completion_tokens: 500
+                messages: conversationHistory
             })
         });
 
         if (!response.ok) {
-            const errText = await response.text();
-            throw new Error(`API Foutmelding ${response.status}: ${errText}`);
+            const errorResult = await response.json();
+            throw new Error(`Server Foutmelding ${response.status}: ${errorResult.error || 'Onbekende fout'}`);
         }
 
         const data = await response.json();
